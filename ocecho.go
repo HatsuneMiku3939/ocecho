@@ -104,6 +104,12 @@ func (h *ocechoHandler) startStats(c echo.Context) (echo.Context, func(echo.Cont
 		ctx:   ctx,
 	}
 
+	if r.Body == nil {
+		track.reqSize = -1
+	} else if r.ContentLength > 0 {
+		track.reqSize = r.ContentLength
+	}
+
 	r = r.WithContext(ctx)
 	c.SetRequest(r)
 	stats.Record(ctx, ServerRequestCount.M(1))
@@ -111,10 +117,9 @@ func (h *ocechoHandler) startStats(c echo.Context) (echo.Context, func(echo.Cont
 }
 
 type statsTracker struct {
-	ctx      context.Context
-	reqSize  int64
-	respSize int64
-	start    time.Time
+	ctx     context.Context
+	reqSize int64
+	start   time.Time
 }
 
 func (t *statsTracker) end(c echo.Context, tags *addedTags) {
@@ -130,7 +135,7 @@ func (t *statsTracker) end(c echo.Context, tags *addedTags) {
 
 	m := []stats.Measurement{
 		ServerLatency.M(float64(time.Since(t.start)) / float64(time.Millisecond)),
-		ServerResponseBytes.M(t.respSize),
+		ServerResponseBytes.M(c.Response().Size),
 	}
 	if t.reqSize >= 0 {
 		m = append(m, ServerRequestBytes.M(t.reqSize))
