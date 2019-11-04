@@ -41,6 +41,9 @@ You can found whole example in ``examples``.
 
 ## Release History
 
+* 0.2.0
+    * Add IsPublicEndpoint option
+    * Fix Span name as same as `ochttp`
 * 0.1.1
     * Fix RequestSize, ResponseSize metric bug
 * 0.1.0
