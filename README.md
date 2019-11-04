@@ -22,11 +22,17 @@ go get github.com/HatsuneMiku3939/ocecho
 
 ```go
 // ocecho Middleware
-e.Use(ocecho.OpenCensusMiddleware(&b3.HTTPFormat{}, trace.StartOptions{}))
+e.Use(ocecho.OpenCensusMiddleware(
+    ocecho.TraceOptions{
+        IsPublicEndpoint: true,
+        Propagation:      &b3.HTTPFormat{},
+        StartOptions:     trace.StartOptions{},
+    },
+))
 
 // Register server views
 if err := view.Register(ocecho.DefaultServerViews...); err != nil {
-	log.Fatalf("Error creating metric views: %v", err)
+    log.Fatalf("Error creating metric views: %v", err)
 }
 ```
 
