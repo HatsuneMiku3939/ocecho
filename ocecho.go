@@ -28,12 +28,20 @@ import (
 	"go.opencensus.io/trace/propagation"
 )
 
+// TraceOptions
+type TraceOptions struct {
+	IsPublicEndpoint bool
+	Propagation      propagation.HTTPFormat
+	StartOptions     trace.StartOptions
+}
+
 // OpenCensusMiddleware OpenCensus trace, stats middleware
-func OpenCensusMiddleware(Propagation propagation.HTTPFormat, StartOptions trace.StartOptions) echo.MiddlewareFunc {
+func OpenCensusMiddleware(opts TraceOptions) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		m := &ocechoHandler{
-			Propagation:  Propagation,
-			StartOptions: StartOptions,
+			IsPublicEndpoint: opts.IsPublicEndpoint,
+			Propagation:      opts.Propagation,
+			StartOptions:     opts.StartOptions,
 		}
 
 		return func(c echo.Context) error {
@@ -55,8 +63,9 @@ func OpenCensusMiddleware(Propagation propagation.HTTPFormat, StartOptions trace
 }
 
 type ocechoHandler struct {
-	Propagation  propagation.HTTPFormat
-	StartOptions trace.StartOptions
+	IsPublicEndpoint bool
+	Propagation      propagation.HTTPFormat
+	StartOptions     trace.StartOptions
 }
 
 func (h *ocechoHandler) startTrace(c echo.Context) (echo.Context, func()) {
@@ -67,17 +76,23 @@ func (h *ocechoHandler) startTrace(c echo.Context) (echo.Context, func()) {
 
 	var span *trace.Span
 	sc, ok := h.Propagation.SpanContextFromRequest(r)
-	ctx, span = trace.StartSpan(ctx, name,
-		trace.WithSampler(h.StartOptions.Sampler),
-		trace.WithSpanKind(trace.SpanKindServer),
-	)
-	if ok {
-		span.AddLink(trace.Link{
-			TraceID:    sc.TraceID,
-			SpanID:     sc.SpanID,
-			Type:       trace.LinkTypeParent,
-			Attributes: nil,
-		})
+	if ok && !h.IsPublicEndpoint {
+		ctx, span = trace.StartSpanWithRemoteParent(ctx, name, sc,
+			trace.WithSampler(h.StartOptions.Sampler),
+			trace.WithSpanKind(trace.SpanKindServer))
+	} else {
+		ctx, span = trace.StartSpan(ctx, name,
+			trace.WithSampler(h.StartOptions.Sampler),
+			trace.WithSpanKind(trace.SpanKindServer),
+		)
+		if ok {
+			span.AddLink(trace.Link{
+				TraceID:    sc.TraceID,
+				SpanID:     sc.SpanID,
+				Type:       trace.LinkTypeParent,
+				Attributes: nil,
+			})
+		}
 	}
 
 	span.AddAttributes(requestAttrs(c.Path(), r)...)
