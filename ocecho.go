@@ -62,7 +62,7 @@ type ocechoHandler struct {
 func (h *ocechoHandler) startTrace(c echo.Context) (echo.Context, func()) {
 	r := c.Request()
 
-	name := r.Method + " " + c.Path()
+	name := c.Path()
 	ctx := r.Context()
 
 	var span *trace.Span
