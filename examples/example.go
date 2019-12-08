@@ -20,10 +20,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
-
 	"github.com/HatsuneMiku3939/ocecho"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+
 	"go.opencensus.io/examples/exporter"
 	"go.opencensus.io/plugin/ochttp/propagation/b3"
 	"go.opencensus.io/stats/view"
