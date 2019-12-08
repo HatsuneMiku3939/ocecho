@@ -22,12 +22,21 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 
 	"go.opencensus.io/stats"
 	"go.opencensus.io/tag"
 	"go.opencensus.io/trace"
 	"go.opencensus.io/trace/propagation"
 )
+
+type OpenCensusConfig struct {
+	// Skipper defines a function to skip middleware
+	Skipper middleware.Skipper
+
+	// TraceOptions defines a Tracer options
+	TraceOptions TraceOptions
+}
 
 // TraceOptions
 type TraceOptions struct {
@@ -37,15 +46,24 @@ type TraceOptions struct {
 }
 
 // OpenCensusMiddleware OpenCensus trace, stats middleware
-func OpenCensusMiddleware(opts TraceOptions) echo.MiddlewareFunc {
+func OpenCensusMiddleware(opts OpenCensusConfig) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		var skipper middleware.Skipper
+		if opts.Skipper == nil {
+			skipper = middleware.DefaultSkipper
+		}
+
 		m := &ocechoHandler{
-			IsPublicEndpoint: opts.IsPublicEndpoint,
-			Propagation:      opts.Propagation,
-			StartOptions:     opts.StartOptions,
+			IsPublicEndpoint: opts.TraceOptions.IsPublicEndpoint,
+			Propagation:      opts.TraceOptions.Propagation,
+			StartOptions:     opts.TraceOptions.StartOptions,
 		}
 
 		return func(c echo.Context) error {
+			if skipper(c) {
+				return next(c)
+			}
+
 			var tags addedTags
 
 			c, traceEnd := m.startTrace(c)

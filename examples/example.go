@@ -74,10 +74,13 @@ func main() {
 
 	// ocecho Middleware
 	e.Use(ocecho.OpenCensusMiddleware(
-		ocecho.TraceOptions{
-			IsPublicEndpoint: true,
-			Propagation:      &b3.HTTPFormat{},
-			StartOptions:     trace.StartOptions{},
+		ocecho.OpenCensusConfig{
+			Skipper: middleware.DefaultSkipper,
+			TraceOptions: ocecho.TraceOptions{
+				IsPublicEndpoint: true,
+				Propagation:      &b3.HTTPFormat{},
+				StartOptions:     trace.StartOptions{},
+			},
 		},
 	))
 

@@ -23,10 +23,13 @@ go get github.com/HatsuneMiku3939/ocecho
 ```go
 // ocecho Middleware
 e.Use(ocecho.OpenCensusMiddleware(
-    ocecho.TraceOptions{
-        IsPublicEndpoint: true,
-        Propagation:      &b3.HTTPFormat{},
-        StartOptions:     trace.StartOptions{},
+    ocecho.OpenCensusConfig{
+        Skipper: middleware.DefaultSkipper,
+        TraceOptions: ocecho.TraceOptions{
+            IsPublicEndpoint: true,
+            Propagation:      &b3.HTTPFormat{},
+            StartOptions:     trace.StartOptions{},
+        },
     },
 ))
 
@@ -41,6 +44,10 @@ You can found whole example in ``examples``.
 
 ## Release History
 
+* 0.3.0
+    * `Broke v0.2.0 compatibility`
+    * Add Skipper option
+    * Update echo.v4
 * 0.2.0
     * Add IsPublicEndpoint option
     * Fix Span name as same as `ochttp`
