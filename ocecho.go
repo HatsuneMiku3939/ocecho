@@ -49,6 +49,7 @@ type TraceOptions struct {
 func OpenCensusMiddleware(opts OpenCensusConfig) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		var skipper middleware.Skipper
+		skipper = opts.Skipper
 		if opts.Skipper == nil {
 			skipper = middleware.DefaultSkipper
 		}
