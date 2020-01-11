@@ -24,6 +24,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
+	"go.opencensus.io/plugin/ochttp/propagation/b3"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/tag"
 	"go.opencensus.io/trace"
@@ -58,6 +59,9 @@ func OpenCensusMiddleware(opts OpenCensusConfig) echo.MiddlewareFunc {
 			IsPublicEndpoint: opts.TraceOptions.IsPublicEndpoint,
 			Propagation:      opts.TraceOptions.Propagation,
 			StartOptions:     opts.TraceOptions.StartOptions,
+		}
+		if m.Propagation == nil {
+			m.Propagation = &b3.HTTPFormat{}
 		}
 
 		return func(c echo.Context) error {
