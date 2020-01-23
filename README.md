@@ -44,6 +44,8 @@ You can found whole example in ``examples``.
 
 ## Release History
 
+* 0.3.1
+    * Add default Propagation option
 * 0.3.0
     * `Broke v0.2.0 compatibility`
     * Add Skipper option
