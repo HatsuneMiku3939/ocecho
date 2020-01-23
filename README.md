@@ -44,8 +44,10 @@ You can found whole example in ``examples``.
 
 ## Release History
 
-* 0.3.1
+* 0.3.2
     * Add default Propagation option
+* 0.3.1
+    * fix nill reference
 * 0.3.0
     * `Broke v0.2.0 compatibility`
     * Add Skipper option
